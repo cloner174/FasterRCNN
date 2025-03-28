@@ -6,8 +6,7 @@ from pprint import pprint
 class Config:
 
     # dataset params
-    database = 'kitti'  # choose one from ['VOC', 'KITTI']
-    voc_data_dir = '/data/ziruiw3/VOCdevkit/VOC2007/'
+    database = 'kitti'  # Only Supports : KITTI
     kitti_data_dir = '/data/ziruiw3/KITTI2VOC/'
     min_size = 600  # image resize
     max_size = 1000 # image resize
@@ -22,8 +21,8 @@ class Config:
 
     # model params
     model = 'vgg16' 
-    apply_fpn =  True      # use feature pyramid network for region proposal
-    deformable = True       # use deformable conv + deformable roi pooling
+    apply_fpn =  False      # False for Vanila FRCNN
+    deformable = False       # False for Vanila FRCNN
 
     # training params
     nms_thresh = 0.3        # iou threshold in nms

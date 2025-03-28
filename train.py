@@ -21,19 +21,13 @@ from model.frcnn_bottleneck import Losses
 from utils import array_tool as at
 from utils.eval_tool import voc_ap
 
-# def setup_logger():
-#     if not os.path.exists(opt.save_dir):
-#         os.makedirs(opt.save_dir)
-#     f = open(f'{opt.save_dir}/log.txt', 'w')
-#     sys.stdout = f
-
-#     return f
 
 
 def update_meters(meters, losses):
     loss_d = {k: at.scalar(v) for k, v in losses._asdict().items()}
     for key, meter in meters.items():
         meter.add(loss_d[key])
+
 
 def reset_meters(meters):
     for _, meter in meters.items():
@@ -43,14 +37,15 @@ def reset_meters(meters):
 def get_meter_data(meters):
     return {k: v.value()[0] for k, v in meters.items()}
 
+
 def save_model(model, model_name, dataset_name,epoch):
     PATH = f'./checkpoints/{model_name}/{dataset_name}/checkpoint{epoch}.pth'
     dir = os.path.dirname(PATH)
     if not os.path.exists(dir):
         os.makedirs(dir)
     torch.save(model.state_dict(), PATH)
-
     return PATH
+
 
 def build_optimizer(net):
     """
@@ -78,12 +73,12 @@ def train(**kwargs):
     # parse model parameters from config 
     opt.f_parse_args(kwargs)
 
-    if opt.database == 'voc':
-        print('load voc data')
-    elif opt.database == 'kitti':
+    if opt.database == 'kitti':
         print('load kitti data')
+    else:
+        raise NotImplementedError()
     # load training dataset 
-    train_data = Dataset(opt,mode='train')
+    train_data = Dataset(opt, mode='train')
     train_dataloader = DataLoader(train_data, 
                             batch_size=1, 
                             shuffle=True,
