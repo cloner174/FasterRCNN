@@ -182,12 +182,6 @@ def bbox_iou(bbox_a, bbox_b):
     area_b = xp.prod(bbox_b[:, 2:] - bbox_b[:, :2], axis=1)
     return area_i / (area_a[:, None] + area_b - area_i)
 
-def generate_anchors_fpn(scales, ratios, feat_shapes, feat_strides):
-    anchors = []
-    for i in range(len(scales)):
-        anchor = generate_anchors(scales[i], ratios, feat_shapes[i], feat_strides[i])
-        anchors.append(anchor)
-    return np.concatenate(anchors, axis=0)
 
 
 def generate_anchors(scales, ratios, feat_shape, feat_stride):

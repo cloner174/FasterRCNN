@@ -21,8 +21,6 @@ class Config:
 
     # model params
     model = 'vgg16' 
-    apply_fpn =  False      # False for Vanila FRCNN
-    deformable = False       # False for Vanila FRCNN
 
     # training params
     nms_thresh = 0.3        # iou threshold in nms

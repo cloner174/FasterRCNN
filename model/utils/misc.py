@@ -33,7 +33,6 @@ def _smooth_l1_loss(x, t, in_weight, sigma):
     return y.sum()
 
 #################################################################
-# FPN helper functions
 
 # NOTE: Helper function for deciding the feature level of each RoI
 def assign_feature_level(roi, k0, low, high):

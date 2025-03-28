@@ -10,7 +10,6 @@ from model.utils.backbone import load_vgg16_extractor, load_vgg16_classifier
 from model.rpn.region_proposal_network import RPN
 from model.utils.misc import normal_init
 
-# deformable module
 
 # Other Utils
 from utils.config import opt
@@ -51,7 +50,7 @@ class FasterRCNNVGG16(FasterRCNNBottleneck):
             spatial_scale=1/16.,
             pooling_size=7,
             roi_sigma=opt.roi_sigma)
-        # deformable roi pooling
+        # roi pooling
         self.pooling = tv.ops.RoIPool(self.pooling_size,self.spatial_scale)
 
         # initialize parameters

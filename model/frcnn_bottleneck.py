@@ -142,7 +142,6 @@ class FasterRCNNBottleneck(nn.Module):
             feature = self.feature_extraction_layer(x)    
             # print("gt_bboxes:", gt_bboxes)
             # print("gt_labels:", gt_labels)
-            # RPN (NOTE: FPN based Region Proposal Network)
             roi, gt_roi_loc, gt_roi_label, rpn_loc_loss, rpn_cls_loss = self.rpn(feature, img_size, scale, gt_bboxes[0], gt_labels[0])
 
             # RoI pooling 
@@ -178,7 +177,6 @@ class FasterRCNNBottleneck(nn.Module):
             # feature extraction (Backbone CNN: VGG16)
             feature = self.feature_extraction_layer(x)
 
-            # RPN (NOTE: FPN based Region Proposal Network)
             roi= self.rpn(feature, img_size, scale, None, None)
 
             # RoI pooling 
