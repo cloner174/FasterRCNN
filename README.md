@@ -13,13 +13,6 @@ dataset, training on KITTI 2D object detection training set and evaluate on vali
 
 ## 2. Experimental Results
 
-- Detection results on PASCAL VOC 2007 test set
-  - All models were evaluated using COCO-style detection evaluation metrics.
-
-| Training dataset |        Model         |   mAP@[.5,.95]  |   mAP@[.75,.95]  |
-| :--------------: | :------------------: | :-------------: | :--------------: |
-|      VOC 07      |    Faster RCNN       |      69.65      |      31.14       | 
-
 - Detection results on KITTI 2d Object Detection valication set
   - All models were evaluated using COCO-style detection evaluation metrics.
 
@@ -50,25 +43,17 @@ dataset, training on KITTI 2D object detection training set and evaluate on vali
 - Download the training, validation, and test data.
 
 ```shell
-# VOC 2007 trainval and test datasets
-wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
-wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
 # KITTI 2d Object Detection training set and groundtruth labels
 wget https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_image_2.zip
 wget https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_label_2.zip
 ```
 
-- Untar files into two separate directories named `VOCdevkit` and `KITTIdevkit`
+- Untar files into directy named `Kitti`
 
 ```shell
-# VOC 2007 trainval and test datasets
-mkdir VOCdevkit && cd VOCdevkit
-tar xvf VOCtrainval_06-Nov-2007.tar
-tar xvf VOCtest_06-Nov-2007.tar
-
 # KITTI 2d Object Detection trainset and labels (following last command)
 cd ..
-mkdir KITTIdevkit && cd KITTI devkit
+mkdir Kitti && cd Kitti
 unzip data_object_image_2.zip
 unzip data_object_label_2.zip
 ```
@@ -77,7 +62,7 @@ unzip data_object_label_2.zip
 
 ```shell
 dataset
-   ├── KITTIdevkit
+   ├── Kitti
    │   ├── training
    │       ├── image_2
    │       └── label_2
@@ -92,13 +77,13 @@ dataset
 
 - Convert the KITTI dataset into PASCAL VOC 2007 dataset format using the dataset format convertion tool script
 
-```shell
-# go back to the main page of the project code
-cd ./improved_faster_rcnn
-# change directory to find the format convertion script
-cd data
-# run dataset format convertion script
-python kitti2voc.py
+```python
+from data.kitti2voc import kitti2voc
+kitti_dataset_dir = os.path.abspath("/data/cloner174/Kitti")
+voc_dataset_dir = os.path.abspath("/data/cloner174/KITTI2VOC")
+train_ratio = 0.8
+class_names=['Person_sitting',"Pedestrian",'Cyclist',"Truck","Car","Tram","Van"]
+kitti2voc(kitti_dataset_dir,voc_dataset_dir,train_ratio,class_names)
 ```
 
 - After running the above command, you should have the same dataset structure for KITTI as VOC 2007, and it is now 
@@ -110,13 +95,6 @@ dataset
    │   ├── Annotations
    │   ├── ImageSets
    │   ├── JPEGImages
-   └── VOCdevkit
-       └── VOC2007
-           ├── Annotations
-           ├── ImageSets
-           ├── JPEGImages
-           ├── SegmentationClass
-           └── SegmentationObject
 ```
 
 ### 4.2 Train models
