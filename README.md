@@ -66,13 +66,6 @@ dataset
    │   ├── training
    │       ├── image_2
    │       └── label_2
-   └── VOCdevkit
-       ├── VOC2007
-           ├── Annotations
-           ├── ImageSets
-           ├── JPEGImages
-           ├── SegmentationClass
-           └── SegmentationObject
 ```
 
 - Convert the KITTI dataset into PASCAL VOC 2007 dataset format using the dataset format convertion tool script
