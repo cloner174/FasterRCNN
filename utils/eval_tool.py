@@ -74,7 +74,8 @@ def eval_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_dif
                                           iou_thresh=iou_thresh)
 
     ap = calc_detection_voc_ap(precision, recall, use_07_metric=use_07_metric)
-
+    mean_f1, mean_recall, mean_precision = calc_f1_prec_recall(precision, recall)
+    print(f'Result: F1-Score=={mean_f1} | Recall== {mean_recall} | Precision=={mean_precision}')
     return {'ap': ap, 'map': np.nanmean(ap)}
 
 
