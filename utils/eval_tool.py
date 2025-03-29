@@ -246,3 +246,127 @@ def calc_detection_voc_ap(prec, rec, use_07_metric=False):
     return ap
 
 
+
+def calc_f1_prec_recall(precision_list, recall_list):
+    """
+    Calculate the maximum F1-score for each class from per-class
+    precision and recall arrays, and then average these maxima
+    across valid classes.
+    
+    This function will:
+      1. Iterate over each class's precision and recall arrays.
+      2. Compute the element-wise F1-score = 2 * p * r / (p + r).
+      3. Identify the maximum F1-score, and the corresponding precision and recall.
+      4. Collect these values for each class and then average them.
+    
+    Parameters
+    ----------
+    precision_list : list of numpy.ndarray or None
+        precision_list[l] is the array of precision values for class l.
+        A None value indicates there were no valid detections or ground-truths
+        for that class.
+    recall_list : list of numpy.ndarray or None
+        recall_list[l] is the array of recall values for class l.
+        A None value indicates there were no valid detections or ground-truths
+        for that class.
+    
+    Returns
+    -------
+    mean_f1 : float
+        The average (across classes) of the maximum F1-score.
+        If no classes are valid (all None), returns 0.0.
+    mean_recall : float
+        The average recall across classes at the threshold
+        giving maximum F1. If no classes are valid, returns 0.0.
+    mean_precision : float
+        The average precision across classes at the threshold
+        giving maximum F1. If no classes are valid, returns 0.0.
+    """
+    f1_values, recall_vals, precision_vals = [], [], []
+
+    for p_arr, r_arr in zip(precision_list, recall_list):
+        # Skip classes with no predictions or no ground truth.
+        if p_arr is None or r_arr is None or len(p_arr) == 0 or len(r_arr) == 0:
+            continue
+        
+        # Compute F1 = 2 * p * r / (p + r) (element-wise).
+        denominator = (p_arr + r_arr + 1e-12)
+        f1_arr = (2 * p_arr * r_arr) / denominator
+        
+        # Index of maximum F1 for this class
+        idx_max_f1 = np.argmax(f1_arr)
+        
+        f1_values.append(f1_arr[idx_max_f1])
+        recall_vals.append(r_arr[idx_max_f1])
+        precision_vals.append(p_arr[idx_max_f1])
+    
+    if len(f1_values) == 0:
+        # If no valid classes, return zeros or you can raise a warning or return np.nan
+        return 0.0, 0.0, 0.0
+    
+    # Compute the average across valid classes
+    mean_f1 = np.mean(f1_values)
+    mean_recall = np.mean(recall_vals)
+    mean_precision = np.mean(precision_vals)
+    
+    return mean_f1, mean_recall, mean_precision
+
+
+def voc_f1_recall_precision(net, test_loader, iou_thresh=0.5):
+    """
+    Compute the mean F1-score, recall, and precision for detections
+    given an IoU threshold, using the same data pipeline as your
+    VOC evaluation (including `run_test` and `voc_prec_rec`).
+    
+    This function:
+      1. Runs inference on the test_loader to gather predicted boxes, labels, scores,
+         and the corresponding ground-truth data (via `run_test`).
+      2. Calculates per-class precision and recall arrays (via `voc_prec_rec`).
+      3. Derives maximum F1, recall, and precision for each class, then averages
+         over valid classes.
+    
+    Parameters
+    ----------
+    net : torch.nn.Module
+        Your trained detection network.
+    test_loader : torch.utils.data.DataLoader
+        The DataLoader for your test set.
+    iou_thresh : float, optional (default=0.5)
+        The IoU threshold for a prediction to be considered correct.
+    
+    Returns
+    -------
+    mean_f1 : float
+        The average of the maximum F1-scores over classes with at least one ground truth.
+    mean_recall : float
+        The average recall corresponding to the max F1 per class.
+    mean_precision : float
+        The average precision corresponding to the max F1 per class.
+
+    Notes
+    -----
+    - This function follows the same iterative scheme used in PASCAL VOC to
+      define a true-positive (IoU >= iou_thresh to a ground-truth bounding box).
+    - The existing logic (run_test, voc_prec_rec) ensures consistent calculation
+      across mAP, precision, recall, and F1.
+    """
+    # 1. Run detection/ inference on the test dataset
+    pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults = run_test(net, test_loader)
+
+    # 2. Compute per-class precision and recall arrays
+    precision_list, recall_list = voc_prec_rec(
+        pred_bboxes=pred_bboxes,
+        pred_labels=pred_labels,
+        pred_scores=pred_scores,
+        gt_bboxes=gt_bboxes,
+        gt_labels=gt_labels,
+        gt_difficults=gt_difficults,
+        iou_thresh=iou_thresh
+    )
+
+    # 3. Compute max-F1 from the precision-recall curves
+    mean_f1, mean_recall, mean_precision = calc_f1_prec_recall(precision_list, recall_list)
+
+    return mean_f1, mean_recall, mean_precision
+
+#cloner174
