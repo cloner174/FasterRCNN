@@ -1,6 +1,5 @@
 from __future__ import  absolute_import
 import os
-import sys
 
 from tqdm import tqdm
 import torch
@@ -13,7 +12,7 @@ from torch.utils.data import DataLoader
 from data.dataset import Dataset
 
 # model 
-from model import FasterRCNNVGG16, FPNFasterRCNNVGG16
+from model import FasterRCNNVGG16
 from torchnet.meter import AverageValueMeter
 from model.frcnn_bottleneck import Losses
 
@@ -71,8 +70,9 @@ def train(**kwargs):
 
 
     # parse model parameters from config 
-    opt.f_parse_args(kwargs)
-
+    if kwargs:
+        opt.f_parse_args(kwargs)
+    
     if opt.database == 'kitti':
         print('load kitti data')
     else:
@@ -92,33 +92,12 @@ def train(**kwargs):
                                  num_workers=opt.test_num_workers)
     
     # model construction
-    if opt.database == 'voc': 
-        if opt.apply_fpn:
-            if opt.deformable:
-                print('load Deformable FPN Faster RCNN Model')
-            else:
-                print('load FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=20).to(device)
-        else:
-            if opt.deformable:
-                print('load Deformable Faster RCNN Model')
-            else:
-                print('load Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=20).to(device) 
-    elif opt.database == 'kitti':
-        if opt.apply_fpn:
-            if opt.deformable:
-                print('load Deformable FPN Faster RCNN Model')
-            else:
-                print('load FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=3).to(device)
-        else:
-            if opt.deformable:
-                print('load Deformable Faster RCNN Model')
-            else:
-                print('load Faster RCNN Model')
+    if opt.database == 'kitti':
+            print('load Faster RCNN Model')
             net = FasterRCNNVGG16(n_fg_class=3).to(device)  # 3 classes: Car, Pedestrian, Cyclist
-
+    else:
+        raise NotImplementedError()
+    
     print('Load SDG optimizer')
     # optimizer construction
     optimizer = build_optimizer(net)
@@ -182,10 +161,7 @@ def train(**kwargs):
             lr = lr * opt.lr_decay
     
     # save final model
-    if opt.deformable:
-        model_name = 'deformable_frcnn_vgg16' if not opt.apply_fpn else 'deformable_fpn_frcnn_vgg16'
-    else:
-        model_name = 'frcnn_vgg16' if not opt.apply_fpn else 'fpn_frcnn_vgg16'
+    model_name = 'frcnn_vgg16'
     PATH = f'{opt.save_dir}/{opt.database}/{model_name}.pth'
     target_dir = os.path.dirname(PATH)
     if not os.path.exists(target_dir):
@@ -193,7 +169,4 @@ def train(**kwargs):
     torch.save(net.state_dict(), PATH)
 
     #log.close()
-
-
-if __name__ == '__main__':
-    train()
+#cloner174

@@ -1,9 +1,6 @@
 import os
-import sys
-
-from tqdm import tqdm
 import torch
-
+import time
 
 # config
 from utils.config import opt
@@ -11,12 +8,11 @@ from utils.config import opt
 #dataset
 from torch.utils.data import DataLoader
 from data.dataset import Dataset
-from data.voc_dataset import VOC_BBOX_LABEL_NAMES
 from data.kitti_dataset import KITTI_BBOX_LABEL_NAMES
-from data.util import KITTI_COLOR_LIST, VOC_COLOR_LIST
+from data.util import KITTI_COLOR_LIST
 
 # model 
-from model import FasterRCNNVGG16, FPNFasterRCNNVGG16
+from model import FasterRCNNVGG16
 
 # utils
 from utils import array_tool as at
@@ -30,7 +26,8 @@ def test(**kwargs):
     device = torch.device('cuda:0' if  torch.cuda.is_available() else 'cpu')
 
     # parse model parameters from config 
-    opt.f_parse_args(kwargs)
+    if kwargs:
+        opt.f_parse_args(kwargs)
 
     print('Load dataset')
     # # load testing dataset
@@ -44,47 +41,29 @@ def test(**kwargs):
 
 
     # model construction
-    if opt.database == 'voc': 
-        if opt.apply_fpn:
-            print('load pre-trained FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=20).to(device)
-        else:
-            print('load pre-trained Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=20).to(device) 
-    elif opt.database == 'kitti':
-        if opt.apply_fpn:
-            print('load pre-trained FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=3).to(device)
-        else:
-            print('load pre-trained Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=3).to(device)
-    # load pretrained weight
-    if opt.deformable:
-        if opt.apply_fpn:
-            PATH = f'./exp/{opt.database}/deformable_fpn_frcnn_vgg16.pth'
-        else:
-            PATH = f'./exp/{opt.database}/deformable_frcnn_vgg16.pth'
+    if opt.database == 'kitti':
+        print('load pre-trained Faster RCNN Model')
+        net = FasterRCNNVGG16(n_fg_class=3).to(device)
     else:
-        if opt.apply_fpn:
-            PATH = f'./exp/{opt.database}/fpn_frcnn_vgg16.pth'
-        else:
-            PATH = f'./exp/{opt.database}/frcnn_vgg16.pth'
+        raise NotImplementedError()
+    # load pretrained weight
+    PATH = f'./exp/{opt.database}/frcnn_vgg16.pth'
 
     net.load_state_dict(torch.load(PATH))
 
     print('Start evaluation')
+    time.sleep(1)
     # evaluation
     net.eval()
 
-    if opt.deformable:
-        model_name = 'deformable_fpn_frcnn_vgg16' if opt.apply_fpn else 'deformable_frcnn_vgg16'
-    else:
-        model_name = 'fpn_frcnn_vgg16' if opt.apply_fpn else 'frcnn_vgg16'
+    model_name = 'fpn_frcnn_vgg16' if opt.apply_fpn else 'frcnn_vgg16'
     visual_dir = f'./exp/visuals/{opt.database}/{model_name}'
     if not os.path.exists(visual_dir):
         os.makedirs(visual_dir)
 
     if opt.visualize:
+        print('Visualize Mode!')
+        time.sleep(1)
         for i, input_data in enumerate(test_dataloader):
             if i == opt.n_visual_imgs:
                 break
@@ -107,19 +86,13 @@ def test(**kwargs):
             for bbox, label, score in zip(pred_bboxes, pred_labels, pred_scores):
                 if score < 0.5:
                     continue
-                if opt.database == 'voc':
-                    class_name = VOC_BBOX_LABEL_NAMES[label]
-                else:
-                    class_name = KITTI_BBOX_LABEL_NAMES[label]
+                class_name = KITTI_BBOX_LABEL_NAMES[label]
                 # bounding box
                 bbox = bbox.astype(np.int32)
                 # get bbox coordinate
                 ymin, xmin, ymax, xmax = bbox
                 # select color
-                if opt.database == 'voc':
-                    color = VOC_COLOR_LIST[VOC_BBOX_LABEL_NAMES.index(class_name)]
-                else:
-                    color = KITTI_COLOR_LIST[KITTI_BBOX_LABEL_NAMES.index(class_name)]
+                color = KITTI_COLOR_LIST[KITTI_BBOX_LABEL_NAMES.index(class_name)]
                 # draw bbox rectangle
                 cv2.rectangle(ori_img, (xmin, ymin), (xmax, ymax), color, 1)
                 # label
@@ -133,8 +106,6 @@ def test(**kwargs):
             cv2.imwrite(f'{visual_dir}/{i}.jpg', ori_img)
             print(f'Image {i} saved')
     else:
-        mAP = voc_ap(net, test_dataloader)
-
-    
-if __name__ == '__main__':
-    test()
+        voc_ap(net, test_dataloader)
+    return 0
+#cloner174

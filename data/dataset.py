@@ -1,13 +1,11 @@
 from __future__ import  absolute_import
 from __future__ import  division
 import torch as t
-from data.voc_dataset import VOCBboxDataset
 from data.kitti_dataset import KITTIDataset
 from skimage import transform as sktsf
 import torchvision.transforms.functional as F
 from data.util import *
 import numpy as np
-from utils.config import opt
 
 
 
@@ -87,16 +85,13 @@ class Dataset:
     def __init__(self, opt, mode='train'):
         self.opt = opt
         self.mode = mode
-        if opt.database == 'voc':
-            if self.mode == 'train':
-                self.db = VOCBboxDataset(opt.voc_data_dir, split='trainval')
-            else:
-                self.db = VOCBboxDataset(opt.voc_data_dir, split='test', use_difficult=True)
-        elif opt.database == 'kitti':
+        if opt.database == 'kitti':
             if self.mode == 'train':
                 self.db = KITTIDataset(opt.kitti_data_dir, split='train')
             else:
                 self.db = KITTIDataset(opt.kitti_data_dir, split='val')
+        else:
+            raise NotImplementedError()
         self.tsf = Transform(opt.min_size, opt.max_size, mode=mode)
 
     def __getitem__(self, idx):
