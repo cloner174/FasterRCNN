@@ -176,14 +176,4 @@ def batch_image_label_process(batch_kitti_image_paths,batch_kitti_txt_paths,
         single_image_label_process(kitti_image_path,kitti_txt_path,
                                    voc_image_path,voc_annotation_path,class_names)
 
-"""
-if __name__ == '__main__':
-    print("======= Convert KITTI to VOC ========")
-    kitti_dataset_dir = os.path.abspath("/data/ziruiw3/KITTIdevkit")
-    voc_dataset_dir = os.path.abspath("/data/ziruiw3/KITTI2VOC")
-    train_ratio = 0.8
-    class_names=['Person_sitting',"Pedestrian",'Cyclist',"Truck","Car","Tram","Van"]
-    kitti2voc(kitti_dataset_dir,voc_dataset_dir,train_ratio,class_names)
-    print("======= Finished ======")
-"""
 #cloner174
