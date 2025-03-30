@@ -38,7 +38,7 @@ def voc_ap(net, test_loader):
 
     # run test on test dataset
     pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults = run_test(net, test_loader)
-
+    f1_list , recall_list ,precision_list,  = [], [], []
     # evaluate results regardless of area size
     for iou_thresh in iou_threshes:
         result = eval_voc(pred_bboxes, pred_labels, pred_scores,
@@ -46,6 +46,9 @@ def voc_ap(net, test_loader):
                           iou_thresh, use_07_metric=True)
         # accumulate results
         map_result['mAP'] += result['map']
+        f1_list.append(result['f1'])
+        recall_list.append(result['recall'])
+        precision_list.append(result['precision'])
         # save map for iou 0.5 & 0.75
         if iou_thresh == 0.5:
             map_result['mAP_0.5'] = result['map']
@@ -53,10 +56,12 @@ def voc_ap(net, test_loader):
             map_result['mAP_0.75'] = result['map']
     
     map_result['mAP'] /= 10
-
+    mean_f1 = np.mean(f1_list)
+    mean_recall = np.mean(recall_list)
+    mean_precision = np.mean(precision_list)
     # print results
     print('Result: mAP=={:.2f} | mAP@0.5== {:.2f} | mAP@0.75=={:.2f}'.format(map_result['mAP']*100, map_result['mAP_0.5']*100, map_result['mAP_0.75']*100))
-
+    print(f'Result: F1-Score=={mean_f1} | Recall== {mean_recall} | Precision=={mean_precision}')
 
     return map_result['mAP']
 
@@ -75,8 +80,8 @@ def eval_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_dif
 
     ap = calc_detection_voc_ap(precision, recall, use_07_metric=use_07_metric)
     mean_f1, mean_recall, mean_precision = calc_f1_prec_recall(precision, recall)
-    print(f'Result: F1-Score=={mean_f1} | Recall== {mean_recall} | Precision=={mean_precision}')
-    return {'ap': ap, 'map': np.nanmean(ap)}
+    #print(f'Result: F1-Score=={mean_f1} | Recall== {mean_recall} | Precision=={mean_precision}')
+    return {'ap': ap, 'map': np.nanmean(ap), 'precision': mean_precision, 'recall' : mean_recall, 'f1': mean_f1}
 
 
 def voc_prec_rec(
