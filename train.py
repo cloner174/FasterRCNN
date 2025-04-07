@@ -94,7 +94,7 @@ def train(**kwargs):
     # model construction
     if opt.database == 'kitti':
             print('load Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=3).to(device)  # 3 classes: Car, Pedestrian, Cyclist
+            net = FasterRCNNVGG16(n_fg_class=5).to(device)  # 5 classes: Car, Pedestrian, Cyclist, Van, Truck
     else:
         raise NotImplementedError()
     
