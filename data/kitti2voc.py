@@ -160,8 +160,12 @@ def single_image_label_process(kitti_image_path,kitti_txt_path,voc_image_path,vo
                     label = 'pedestrian'
                 elif label in ['Cyclist']:
                     label = 'cyclist'
-                elif label in ['Car','Van','Truck','Tram']:
+                elif label in ['Car','Tram']:
                     label = 'car'
+                elif label in ['Van']:
+                    label = 'van'
+                elif label in ['Truck']:
+                    label = 'truck'
                 writer.addObject(label,xmin,ymin,xmax,ymax)
         writer.save(voc_annotation_path)
 
